@@ -28,11 +28,7 @@ def DISKStats():
         try:
             diskUsage = psutil.disk_usage(partition[1])
             print(diskUsage)
-            break
-        except ValueError:
-            print("No permissions for that disk:"+partition+"\n") 
-    diskUsage = psutil.disk_usage('/')
-    diskUsagePerC = diskUsage[3]
-    diskUsageUsed = diskUsage[1]
+        except OSError as e:
+            print("No permissions for disk: "+partition[1]+"\n") 
 
 DISKStats()
