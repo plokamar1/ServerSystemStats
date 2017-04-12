@@ -1,11 +1,12 @@
-import psutil
-import time
+#libraries import
+import psutil, time, json
 
-def CPUPercent():
-    return psutil.cpu_percent(interval=1, percpu=True)
+#scripts import
+from systemFunctions import *
+
 
 if __name__ == "__main__":
     i = 1
     while ( i>0 ):
-        print(CPUPercent() )
+        print(CPUStats())
         time.sleep(30)

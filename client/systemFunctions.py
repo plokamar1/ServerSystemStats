@@ -22,5 +22,17 @@ def CPUStats():
     retStr +="\t}\n]"
     print(retStr)
 
+def DISKStats():
+    partitions = psutil.disk_partitions()
+    for partition in partitions:
+        try:
+            diskUsage = psutil.disk_usage(partition[1])
+            print(diskUsage)
+            break
+        except ValueError:
+            print("No permissions for that disk:"+partition+"\n") 
+    diskUsage = psutil.disk_usage('/')
+    diskUsagePerC = diskUsage[3]
+    diskUsageUsed = diskUsage[1]
 
-CPUStats()
+DISKStats()
