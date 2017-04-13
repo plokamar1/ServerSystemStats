@@ -1,4 +1,5 @@
 import psutil, json, string, time
+from bitmath import *
 import os
 
 def CPUStats():
@@ -23,12 +24,26 @@ def CPUStats():
     print(retStr)
 
 def DISKStats():
+    partitions_stats = []
     partitions = psutil.disk_partitions()
     for partition in partitions:
         try:
             diskUsage = psutil.disk_usage(partition[1])
-            print(diskUsage)
+            diskUsage_gb = ('%.2f' % (diskUsage[1]/1073741824)) + " Gb"
+
+            eachPart_stats ={ "Name": partition[1], "usagePercent":diskUsage[3], "usageGB":diskUsage_gb }
+            partitions_stats.append(eachPart_stats)
+            print(partitions_stats)
         except OSError as e:
             print("No permissions for disk: "+partition[1]+"\n") 
+
+    retStr = "\"PartitionStats\": [\n"
+    for partition in partitions_stats:
+        retStr += json.dumps({"partitionName":partition['Name'] ,"usageInGb":partition['usageGB'],"usagePercent": partition['usagePercent'],},indent=4, separators=(',', ': '))
+
+        # retStr += "\t\"" + partition['Name'] + "\" : {\n"
+        # retStr += "\t\t\"usageInGb\" : \""+ partition['usageGB'] + "\",\n"
+        # retStr += "\t\t\"usagePercent\" : \""+ str(partition['usagePercent']) + "\",\n"
+        print(retStr)
 
 DISKStats()
