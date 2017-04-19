@@ -1,7 +1,6 @@
-import psutil
+import psutil, json
 
 class connPorts:
-
     def __init__(self, name):
         self.name = name
         self.connections = 1
@@ -9,9 +8,8 @@ class connPorts:
     def addConnection(self):
         self.connections += 1
 
-
-
 def getConnections(port):
+    retStr = ""
     i = 0
     ports = []
     connObjects = []
@@ -27,7 +25,9 @@ def getConnections(port):
                 obj.addConnection()
 
     for connObject in connObjects:
-        print( str(connObject.name)+" : "+str(connObject.connections))
-    print(i)
+        #print( str(connObject.name)+" : "+str(connObject.connections))
+        retStr += json.dumps({"PortName": connObject.name , "Connections" : connObject.connections},indent=4, separators=(',', ': '))
+
+    print(retStr)
 
 getConnections(3306)
