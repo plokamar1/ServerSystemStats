@@ -8,18 +8,24 @@ def CPUStats():
     
     nmbCores = len(percentPerCpu)
     ######################Making the json object
-    retStr = "\"CPUStats\": {\n\t\"CurrentUsage\":["
+    #current usage first
+    retStr = '{"CPUStats": {"CurrentUsage" : {'
     for i in range(1,nmbCores+1):
-        retStr += "\n\t\t\"Core_"+str(i)+"\" : \""+ str( percentPerCpu[i-1]/nmbCores ) +""
+        retStr += '"Core_'+str(i)+'" : '+ str( percentPerCpu[i-1]/nmbCores )
         if(i < nmbCores):
             retStr += ','
-    retStr += "\n\t],\n"
-    
-    retStr +="\t\"loadAverage\": [\n"
-    retStr +="\t\t\"oneMinute\":\""+str(loadAverage[0])+"\",\n"
-    retStr +="\t\t\"fiveMinutes\":\""+str(loadAverage[1])+"\",\n"
-    retStr +="\t\t\"fifteenMinutes\":\""+str(loadAverage[2])+"\"\n"
-    retStr +="\t]\n}"
+    retStr += '}'
+    retStr += ','
+    #load average
+    retStr +='"loadAverage": {'
+    retStr +='"oneMinute":'+str(loadAverage[0])+','
+    retStr +='"fiveMinutes":'+str(loadAverage[1])+','
+    retStr +='"fifteenMinutes":'+str(loadAverage[2])+','
+    retStr += '}'
+
+    retStr +=' }}'
+
+    print(json.dumps(json.loads(retStr ),indent=4, separators=(',', ': ')))
     return retStr
 
 def DISKStats():
