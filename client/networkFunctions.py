@@ -9,9 +9,8 @@ class connPorts:
         self.connections += 1
 
 
-
-    retStr = ""
 def getConnections():
+    retStr = ""
     i = 0
     ports = []
     connObjects = []
@@ -32,4 +31,4 @@ def getConnections():
 
     print(retStr)
 
-#getConnections()
+getConnections()

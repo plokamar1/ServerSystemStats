@@ -1,32 +1,31 @@
-import psutil, json, string, time
+import psutil, json, string, time, platform
 import os
 
+class diskObj:
+    def __init__(self,partitions_stats):
+        self.partitions_stats = [partitions_stats]
+
+class cpuObj:
+    def __init__(self,loadAverage,percentPerCpu):
+        self.loadAverage = {"oneMinute":loadAverage[0],"fiveMinutes":loadAverage[1],"fifteenMinutes":loadAverage[2]}
+        self.currentUsagePerCore = [percentPerCpu]
+
+
+
 def CPUStats():
-    loadAverage = os.getloadavg()
+    #If the OS is not windows get load average
+    if platform.system() != 'Windows':
+        loadAverage = os.getloadavg()
+    else:
+        loadAverage = [None,None,None]
 
+    #Get current cpu usage
     percentPerCpu = psutil.cpu_percent(interval=1, percpu=True)
-    
-    nmbCores = len(percentPerCpu)
-    ######################Making the json object
-    #current usage first
-    retStr = '{"CPUStats": {"CurrentUsage" : {'
-    for i in range(1,nmbCores+1):
-        retStr += '"Core_'+str(i)+'" : '+ str( percentPerCpu[i-1]/nmbCores )
-        if(i < nmbCores):
-            retStr += ','
-    retStr += '}'
-    retStr += ','
-    #load average
-    retStr +='"loadAverage": {'
-    retStr +='"oneMinute":'+str(loadAverage[0])+','
-    retStr +='"fiveMinutes":'+str(loadAverage[1])+','
-    retStr +='"fifteenMinutes":'+str(loadAverage[2])+','
-    retStr += '}'
 
-    retStr +=' }}'
+    #Construct the cpu object
+    coreObj = cpuObj(loadAverage,percentPerCpu)
+    #print(json.dumps(vars(coreObj),sort_keys=True, indent=4))
 
-    print(json.dumps(json.loads(retStr ),indent=4, separators=(',', ': ')))
-    return retStr
 
 def DISKStats():
     partitions_stats = []
@@ -37,15 +36,14 @@ def DISKStats():
             diskUsage_gb = ('%.2f' % (diskUsage.used/1073741824)) + " Gb"
             diskIO = psutil.disk_io_counters()
 
-            eachPart_stats ={ "Name": partition.mountpoint, "usagePercent":diskUsage.percent, "usageGB":diskUsage_gb, "read_count": diskIO.read_count , "write_count":diskIO.write_count }
+            eachPart_stats = { "Name": partition.mountpoint, "usagePercent":diskUsage.percent, "usageGB":diskUsage_gb, "read_count": diskIO.read_count , "write_count":diskIO.write_count }
             partitions_stats.append(eachPart_stats)
         except OSError as e:
-            print("No permissions for disk: "+partition.mountpoint+"\n") 
+            print("No permissions for disk: "+partition.mountpoint+"\n")
 
-    retStr = "\"PartitionStats\": [\n"
-    for partition in partitions_stats:
-        retStr += json.dumps({"partitionName":partition['Name'] ,"usageInGb":partition['usageGB'],"usagePercent": partition['usagePercent'],"diskRead":partition['read_count'],"diskWrite":partition['write_count']},indent=4, separators=(',', ': '))
-        
-    return retStr
+    partObject = diskObj(partitions_stats)
+    print(json.dumps(vars(partObject),sort_keys=True, indent=4))
+    print(partitions_stats)
 
-#DISKStats()
+DISKStats()
+CPUStats()
