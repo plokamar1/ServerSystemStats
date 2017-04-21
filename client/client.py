@@ -1,5 +1,7 @@
 #libraries import
-import time, json, os
+import time
+import json
+import os
 from configparser import SafeConfigParser
 
 #scripts import
@@ -9,6 +11,8 @@ from networkFunctions import *
 #got this code from rominf in stack overflow
 #It checks if a library is installed. If not the function downloads it
 #and imports it
+
+
 def install_and_import(package):
     import importlib
     try:
@@ -26,13 +30,13 @@ if __name__ == "__main__":
     install_and_import('socket')
 
     config = SafeConfigParser()
-    if os.path.isfile(os.getcwd()+'\client\config.ini'):
-        config.read(os.getcwd()+'\client\config.ini')
+    if os.path.isfile(os.getcwd() + '\client\config.ini'):
+        config.read(os.getcwd() + '\client\config.ini')
         config.sections()
-        sleep_time = config.getint('Settings','Get_Status_Every')
+        sleep_time = config.getint('Settings', 'Get_Status_Every')
         server_ip = config.get('Server', 'Server_IP')
         server_port = config.getint('Server', 'Port')
-        
+
         print(sleep_time)
         print(server_ip)
         print(server_port)
