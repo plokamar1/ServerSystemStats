@@ -3,12 +3,12 @@ import os
 
 class diskObj:
     def __init__(self,partitions_stats):
-        self.partitions_stats = [partitions_stats]
+        self.partitions_stats = partitions_stats
 
 class cpuObj:
     def __init__(self,loadAverage,percentPerCpu):
         self.loadAverage = {"oneMinute":loadAverage[0],"fiveMinutes":loadAverage[1],"fifteenMinutes":loadAverage[2]}
-        self.currentUsagePerCore = [percentPerCpu]
+        self.currentUsagePerCore = percentPerCpu
 
 
 
@@ -24,7 +24,9 @@ def CPUStats():
 
     #Construct the cpu object
     coreObj = cpuObj(loadAverage,percentPerCpu)
-    #print(json.dumps(vars(coreObj),sort_keys=True, indent=4))
+    cpuJSON = json.dumps(vars(coreObj),sort_keys=True, indent=4)
+    
+    return cpuJSON
 
 
 def DISKStats():
@@ -36,14 +38,23 @@ def DISKStats():
             diskUsage_gb = ('%.2f' % (diskUsage.used/1073741824)) + " Gb"
             diskIO = psutil.disk_io_counters()
 
-            eachPart_stats = { "Name": partition.mountpoint, "usagePercent":diskUsage.percent, "usageGB":diskUsage_gb, "read_count": diskIO.read_count , "write_count":diskIO.write_count }
+            #Creating the dictionary for each partition
+            eachPart_stats = { 
+                "Name": partition.mountpoint, 
+                "usagePercent":diskUsage.percent, 
+                "usageGB":diskUsage_gb, 
+                "read_count": diskIO.read_count, 
+                "write_count":diskIO.write_count
+                }
+            #Put each dictionary to this list
             partitions_stats.append(eachPart_stats)
         except OSError as e:
             print("No permissions for disk: "+partition.mountpoint+"\n")
 
     partObject = diskObj(partitions_stats)
-    print(json.dumps(vars(partObject),sort_keys=True, indent=4))
-    print(partitions_stats)
+    diskJSON = json.dumps(vars(partObject),sort_keys=True, indent=4)
+
+    return diskJSON
 
 DISKStats()
 CPUStats()
