@@ -2,11 +2,15 @@ import psutil, json
 
 class connPorts:
     def __init__(self, name):
-        self.name = name
+        self.port_name = name
         self.connections = 1
 
     def addConnection(self):
         self.connections += 1
+
+def get_dict(connObjects):
+    return connObjects.__dict__
+
 
 
 def getConnections():
@@ -18,17 +22,14 @@ def getConnections():
         if connection.status == 'ESTABLISHED' :
             if connection.raddr[1] not in ports:
                 ports.append(connection.raddr[1])
-                connObjects.append(connPorts(name = connection.raddr[1]))
+                connObjects.append(connPorts(connection.raddr[1]))
     
     for obj in connObjects:
         for connection in psutil.net_connections():
-            if connection.status == 'ESTABLISHED' and connection.raddr[1] == obj.name:
+            if connection.status == 'ESTABLISHED' and connection.raddr[1] == obj.port_name:
                 obj.addConnection()
 
-    for connObject in connObjects:
-        #print( str(connObject.name)+" : "+str(connObject.connections))
-        retStr += json.dumps({"PortName": connObject.name , "Connections" : connObject.connections},indent=4, separators=(',', ': '))
+    connsJSON = json.dumps(connObjects,default=get_dict,indent=4,sort_keys=False)
+    return connsJSON
 
-    print(retStr)
-
-getConnections()
+print(getConnections())

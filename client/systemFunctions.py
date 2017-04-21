@@ -5,6 +5,7 @@ class diskObj:
     def __init__(self,partitions_stats):
         self.partitions_stats = partitions_stats
 
+
 class cpuObj:
     def __init__(self,loadAverage,percentPerCpu):
         self.loadAverage = {"oneMinute":loadAverage[0],"fiveMinutes":loadAverage[1],"fifteenMinutes":loadAverage[2]}
@@ -25,7 +26,7 @@ def CPUStats():
     #Construct the cpu object
     coreObj = cpuObj(loadAverage,percentPerCpu)
     cpuJSON = json.dumps(vars(coreObj),sort_keys=True, indent=4)
-    
+
     return cpuJSON
 
 
