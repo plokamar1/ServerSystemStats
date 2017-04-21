@@ -11,7 +11,7 @@ class connPorts:
 
 
 
-def getConnections(port):
+def getConnections():
     i = 0
     ports = []
     connObjects = []
@@ -30,4 +30,4 @@ def getConnections(port):
         print( str(connObject.name)+" : "+str(connObject.connections))
     print(i)
 
-getConnections(3306)
+#getConnections()

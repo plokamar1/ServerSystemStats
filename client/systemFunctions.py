@@ -40,6 +40,6 @@ def DISKStats():
     for partition in partitions_stats:
         retStr += json.dumps({"partitionName":partition['Name'] ,"usageInGb":partition['usageGB'],"usagePercent": partition['usagePercent'],"diskRead":partition['read_count'],"diskWrite":partition['write_count']},indent=4, separators=(',', ': '))
         
-    print( retStr)
+    return retStr
 
-DISKStats()
+#DISKStats()
