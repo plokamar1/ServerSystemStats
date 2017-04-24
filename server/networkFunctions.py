@@ -20,7 +20,7 @@ class SocketObj:
 
     def server_receive(self, buffer_size):
         conn, addr = self.s.accept()
-        print("Connection address:" + addr)
+        print(addr)
         while 1:
             data = conn.recv(buffer_size)
             if not data:
