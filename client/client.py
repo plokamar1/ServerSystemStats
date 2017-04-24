@@ -28,8 +28,8 @@ if __name__ == "__main__":
     install_and_import('socket')
 
     config = SafeConfigParser()
-    if os.path.isfile(os.getcwd() + '\client\config.ini'):
-        config.read(os.getcwd() + '\client\config.ini')
+    if os.path.isfile(os.path.dirname(os.path.realpath(__file__)) + '\config.ini'):
+        config.read(os.path.dirname(os.path.realpath(__file__)) + '\config.ini')
         config.sections()
 
         sleep_time = config.getint('Settings', 'Get_Status_Every')
@@ -43,12 +43,3 @@ if __name__ == "__main__":
             msg = get_system_stats()
             connObj.send_to_server(msg)
             time.sleep(sleep_time*60)
-
-
-        print(sleep_time)
-        print(server_host)
-        print(server_port)
-
-    # while ( i>0 ):
-    #     print(CPUStats())
-    #     time.sleep(30)

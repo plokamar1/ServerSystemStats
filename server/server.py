@@ -5,8 +5,8 @@ from networkFunctions import *
 
 if __name__ == "__main__":
     config = SafeConfigParser()
-    if os.path.isfile(os.getcwd() + '\server\config.ini'):
-        config.read(os.getcwd() + '\server\config.ini')
+    if os.path.isfile(os.path.dirname(os.path.realpath(__file__)) + '\config.ini'):
+        config.read(os.path.dirname(os.path.realpath(__file__)) + '\config.ini')
         config.sections()
 
         se_port = config.getint('Settings','Server_port')
