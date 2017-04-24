@@ -6,6 +6,7 @@ import platform
 import os
 import time
 
+
 class ServerStatusObj:
     def __init__(self, client_name, diskStatusObj, cpuStatusObj, portsStatus, ramStatus, current_time):
         self.ClientName = client_name
@@ -15,15 +16,18 @@ class ServerStatusObj:
         self.RamStatus = ramStatus
         self.Time = current_time
 
+
 class DiskObj:
     def __init__(self, partitions_stats):
         self.partitions_stats = partitions_stats
+
 
 class CpuObj:
     def __init__(self, loadAverage, percentPerCpu):
         self.loadAverage = {
             "oneMinute": loadAverage[0], "fiveMinutes": loadAverage[1], "fifteenMinutes": loadAverage[2]}
         self.currentUsagePerCore = percentPerCpu
+
 
 class ConnPorts:
     def __init__(self, name):
@@ -33,8 +37,9 @@ class ConnPorts:
     def add_connection(self):
         self.connections += 1
 
+
 class RamObj:
-    def __init__(self,ramStatus_percent,ramStatus_total,ramStatus_available,ramStatus_cached,ramStatus_used):
+    def __init__(self, ramStatus_percent, ramStatus_total, ramStatus_available, ramStatus_cached, ramStatus_used):
         self.total = ramStatus_total
         self.percent = ramStatus_percent
         self.available = ramStatus_available
@@ -104,10 +109,11 @@ def get_connections():
         for connection in psutil.net_connections():
             if connection.status == 'ESTABLISHED' and connection.raddr[1] == obj.port_name:
                 obj.add_connection()
-        
+
         connList.append(vars(obj))
 
     return connList
+
 
 def get_ram_status():
     ramStatus = psutil.virtual_memory()
@@ -120,16 +126,20 @@ def get_ram_status():
     else:
         ramStatus_cached = None
 
-    ramObj = RamObj( ramStatus_percent,ramStatus_total,ramStatus_available,ramStatus_cached,ramStatus_used)
+    ramObj = RamObj(ramStatus_percent, ramStatus_total,
+                    ramStatus_available, ramStatus_cached, ramStatus_used)
 
     return ramObj
+
+
 def get_time_dct():
     current_time = time.localtime()
-    time_dct = {'year':current_time.tm_year,
+    time_dct = {'year': current_time.tm_year,
                 'month': current_time.tm_mon,
                 'day': current_time.tm_mday,
-                'time': str(current_time.tm_hour)+':'+str(current_time.tm_min)+':'+str(current_time.tm_sec) }
+                'time': str(current_time.tm_hour) + ':' + str(current_time.tm_min) + ':' + str(current_time.tm_sec)}
     return time_dct
+
 
 def get_system_stats(client_name):
     #get all objects
@@ -139,9 +149,10 @@ def get_system_stats(client_name):
     connections = get_connections()
     current_time = get_time_dct()
     #create the object with all the information
-    serverObj = ServerStatusObj( client_name, vars(partObject), vars(coreObj),connections,vars(ramObj), current_time)
+    serverObj = ServerStatusObj(client_name, vars(partObject), vars(
+        coreObj), connections, vars(ramObj), current_time)
     rtrn_JSON = json.dumps(vars(serverObj), sort_keys=True, indent=4)
-    fp = open('test.json','w')
+    fp = open('test.json', 'w')
     fp.write(rtrn_JSON)
     #print(json.dumps(vars(serverObj), sort_keys=True, indent=4))
     return rtrn_JSON
@@ -152,4 +163,4 @@ def get_system_stats(client_name):
 #print(get_cpu_stats())
 #call_them_all()
 #get_time_dct()
-print(get_system_stats("DESKTOP-003"))
+#print(get_system_stats("DESKTOP-003"))
