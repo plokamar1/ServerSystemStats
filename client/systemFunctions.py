@@ -6,10 +6,11 @@ import platform
 import os
 
 class ServerStatusObj:
-    def __init__(self, diskStatusObj, cpuStatusObj, portsStatus):
+    def __init__(self, diskStatusObj, cpuStatusObj, portsStatus, ramStatus):
         self.DiskStatus = diskStatusObj
         self.CpuStatus = cpuStatusObj
         self.PortsStatus = portsStatus
+        self.RamStatus = ramStatus
 
 class DiskObj:
     def __init__(self, partitions_stats):
@@ -31,8 +32,12 @@ class ConnPorts:
         self.connections += 1
 
 class RamObj:
-    def __init__(self):
-        self.total = 1
+    def __init__(self,ramStatus_percent,ramStatus_total,ramStatus_available,ramStatus_cached,ramStatus_used):
+        self.total = ramStatus_total
+        self.percent = ramStatus_percent
+        self.available = ramStatus_available
+        self.cached = ramStatus_cached
+        self.used = ramStatus_used
 
 
 def get_cpu_stats():
@@ -79,8 +84,8 @@ def get_disk_stats():
 
     return partObject
 
-def get_dict(connObjects):
-    return connObjects.__dict__
+# def get_dict(connObjects):
+#     return connObjects.__dict__
 
 
 def get_connections():
@@ -107,14 +112,26 @@ def get_connections():
 
 def get_ram_status():
     ramStatus = psutil.virtual_memory()
+    ramStatus_percent = ramStatus.percent
+    ramStatus_total = ('%.2f' % (ramStatus.total / 1073741824)) + " Gb"
+    ramStatus_available = ('%.2f' % (ramStatus.available / 1073741824)) + " Gb"
+    ramStatus_used = ('%.2f' % (ramStatus.used / 1073741824)) + " Gb"
+    if platform.system() != 'Windows':
+        ramStatus_cached = ('%.2f' % (ramStatus.cached / 1073741824)) + " Gb"
+    else:
+        ramStatus_cached = None
 
+    ramObj = RamObj( ramStatus_percent,ramStatus_total,ramStatus_available,ramStatus_cached,ramStatus_used)
+
+    return ramObj
 
 
 def get_system_stats():
     partObject = get_disk_stats()
     coreObj = get_cpu_stats()
+    ramObj = get_ram_status()
     connections = get_connections()
-    serverObj = ServerStatusObj( vars(partObject), vars(coreObj),connections)
+    serverObj = ServerStatusObj( vars(partObject), vars(coreObj),connections,vars(ramObj))
     fp = open('test.json','w')
     fp.write(json.dumps(vars(serverObj), sort_keys=True, indent=4))
     print(json.dumps(vars(serverObj), sort_keys=True, indent=4))
@@ -123,4 +140,5 @@ def get_system_stats():
 #print( vars(get_disk_stats()))
 # print(get_cpu_stats())
 #call_them_all()
+#get_system_stats()
 get_system_stats()
