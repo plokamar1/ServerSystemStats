@@ -141,4 +141,4 @@ def get_system_stats():
 # print(get_cpu_stats())
 #call_them_all()
 #get_system_stats()
-get_system_stats()
+#get_system_stats()

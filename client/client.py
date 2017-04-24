@@ -11,8 +11,6 @@ from networkFunctions import *
 #got this code from rominf in stack overflow
 #It checks if a library is installed. If not the function downloads it
 #and imports it
-
-
 def install_and_import(package):
     import importlib
     try:
@@ -33,12 +31,22 @@ if __name__ == "__main__":
     if os.path.isfile(os.getcwd() + '\client\config.ini'):
         config.read(os.getcwd() + '\client\config.ini')
         config.sections()
+
         sleep_time = config.getint('Settings', 'Get_Status_Every')
-        server_ip = config.get('Server', 'Server_IP')
+        server_host = config.get('Server', 'Server_host')
         server_port = config.getint('Server', 'Port')
 
+        connObj = SocketObj()
+        connObj.connect_to_server(server_host, server_port)
+        i = 1
+        while (i>0):
+            msg = get_system_stats()
+            connObj.send_to_server(msg)
+            time.sleep(sleep_time*60)
+
+
         print(sleep_time)
-        print(server_ip)
+        print(server_host)
         print(server_port)
 
     # while ( i>0 ):
