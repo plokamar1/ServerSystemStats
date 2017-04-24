@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     config = SafeConfigParser()
 
-    if platform.system() != 'Windows':
+    if platform.system() == 'Windows':
         fl = '\config.ini'
     else:
         fl = '/config.ini'
@@ -57,3 +57,5 @@ if __name__ == "__main__":
             msg = get_system_stats(client_name)
             connObj.send_to_server(msg)
             time.sleep(sleep_time * 60)
+    else:
+        print('Config file not found')

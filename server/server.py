@@ -7,7 +7,7 @@ from networkFunctions import *
 if __name__ == "__main__":
     config = SafeConfigParser()
 
-    if platform.system() != 'Windows':
+    if platform.system() == 'Windows':
         fl = '\config.ini'
     else:
         fl = '/config.ini'
@@ -23,3 +23,5 @@ if __name__ == "__main__":
         connObj.server_bind(se_host, se_port)
         connObj.server_listen()
         connObj.server_receive(se_buffer)
+    else:
+        print('Config file not found')
