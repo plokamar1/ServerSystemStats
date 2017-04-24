@@ -5,6 +5,11 @@ import time
 import platform
 import os
 
+class ServerStatusObj:
+    def __init__(self, diskStatusObj, cpuStatusObj, portsStatus):
+        self.DiskStatus = diskStatusObj
+        self.CpuStatus = cpuStatusObj
+        self.PortsStatus = portsStatus
 
 class DiskObj:
     def __init__(self, partitions_stats):
@@ -16,6 +21,18 @@ class CpuObj:
         self.loadAverage = {
             "oneMinute": loadAverage[0], "fiveMinutes": loadAverage[1], "fifteenMinutes": loadAverage[2]}
         self.currentUsagePerCore = percentPerCpu
+
+class ConnPorts:
+    def __init__(self, name):
+        self.port_name = name
+        self.connections = 1
+
+    def add_connection(self):
+        self.connections += 1
+
+class RamObj:
+    def __init__(self):
+        self.total = 1
 
 
 def get_cpu_stats():
@@ -29,9 +46,9 @@ def get_cpu_stats():
     percentPerCpu = psutil.cpu_percent(interval=1, percpu=True)
     #Construct the cpu object
     coreObj = CpuObj(loadAverage, percentPerCpu)
-    cpuJSON = json.dumps(vars(coreObj), sort_keys=True, indent=4)
+    #cpuJSON = json.dumps(vars(coreObj), sort_keys=True, indent=4)
 
-    return cpuJSON
+    return coreObj
 
 
 def get_disk_stats():
@@ -41,11 +58,12 @@ def get_disk_stats():
         try:
             diskUsage = psutil.disk_usage(partition.mountpoint)
             diskUsage_gb = ('%.2f' % (diskUsage.used / 1073741824)) + " Gb"
+            diskTotal_gb = ('%.2f' % (diskUsage.total / 1073741824)) + " Gb"
             diskIO = psutil.disk_io_counters()
-
             #Creating the dictionary for each partition
             eachPart_stats = {
                 "Name": partition.mountpoint,
+                "Total": diskTotal_gb,
                 "usagePercent": diskUsage.percent,
                 "usageGB": diskUsage_gb,
                 "read_count": diskIO.read_count,
@@ -57,10 +75,52 @@ def get_disk_stats():
             print("No permissions for disk: " + partition.mountpoint + "\n")
 
     partObject = DiskObj(partitions_stats)
-    diskJSON = json.dumps(vars(partObject), sort_keys=True, indent=4)
+    #diskJSON = json.dumps(vars(partObject), sort_keys=True, indent=4)
 
-    return diskJSON
+    return partObject
+
+def get_dict(connObjects):
+    return connObjects.__dict__
 
 
-print(get_disk_stats())
-print(get_cpu_stats())
+def get_connections():
+    retStr = ""
+    i = 0
+    ports = []
+    connObjects = []
+    connList = []
+    for connection in psutil.net_connections():
+        if connection.status == 'ESTABLISHED':
+            if connection.raddr[1] not in ports:
+                ports.append(connection.raddr[1])
+                connObjects.append(ConnPorts(connection.raddr[1]))
+
+    for obj in connObjects:
+        for connection in psutil.net_connections():
+            if connection.status == 'ESTABLISHED' and connection.raddr[1] == obj.port_name:
+                obj.add_connection()
+        
+        connList.append(vars(obj))
+    #print(connList)
+    #connsJSON = json.dumps(connObjects, default=get_dict)
+    return connList
+
+def get_ram_status():
+    ramStatus = psutil.virtual_memory()
+
+
+
+def get_system_stats():
+    partObject = get_disk_stats()
+    coreObj = get_cpu_stats()
+    connections = get_connections()
+    serverObj = ServerStatusObj( vars(partObject), vars(coreObj),connections)
+    fp = open('test.json','w')
+    fp.write(json.dumps(vars(serverObj), sort_keys=True, indent=4))
+    print(json.dumps(vars(serverObj), sort_keys=True, indent=4))
+
+
+#print( vars(get_disk_stats()))
+# print(get_cpu_stats())
+#call_them_all()
+get_system_stats()
