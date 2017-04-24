@@ -126,14 +126,20 @@ def get_ram_status():
     ramObj = RamObj( ramStatus_percent,ramStatus_total,ramStatus_available,ramStatus_cached,ramStatus_used)
 
     return ramObj
-
+def get_time_dct():
+    current_time = time.localtime()
+    time_dct = {'year':current_time.tm_year,
+                'month': current_time.tm_mon,
+                'day': current_time.tm_mday,
+                'time': str(current_time.tm_hour)+':'+str(current_time.tm_min)+':'+str(current_time.tm_sec) }
+    return(time_dct)
 
 def get_system_stats():
     partObject = get_disk_stats()
     coreObj = get_cpu_stats()
     ramObj = get_ram_status()
     connections = get_connections()
-    current_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime())
+    current_time = get_time_dct()
     serverObj = ServerStatusObj( vars(partObject), vars(coreObj),connections,vars(ramObj), current_time)
     fp = open('test.json','w')
     fp.write(json.dumps(vars(serverObj), sort_keys=True, indent=4))
@@ -145,5 +151,5 @@ def get_system_stats():
 #print( vars(get_disk_stats()))
 #print(get_cpu_stats())
 #call_them_all()
-#get_system_stats()
+#get_time_dct()
 #get_system_stats()
