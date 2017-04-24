@@ -134,7 +134,7 @@ def get_system_stats():
     serverObj = ServerStatusObj( vars(partObject), vars(coreObj),connections,vars(ramObj))
     fp = open('test.json','w')
     fp.write(json.dumps(vars(serverObj), sort_keys=True, indent=4))
-    print(json.dumps(vars(serverObj), sort_keys=True, indent=4))
+    return(json.dumps(vars(serverObj), sort_keys=True, indent=4))
 
 
 #print( vars(get_disk_stats()))
