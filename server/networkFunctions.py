@@ -23,13 +23,13 @@ class SocketObj:
         while 1:
             data = conn.recv(buffer_size)
             if not data: break
-            print(data)
+            print(data.decode())
         conn.close()
 
     def send_to_server(self, msg):
         totalsent = 0
         while totalsent < len(msg):
-            sent = self.s.send((msg[totalsent:]))
+            sent = self.s.send((msg[totalsent:].decode(encoding='UTF-8',errors='strict')))
             if sent == 0:
                 raise RuntimeError("Socket disconnected")
             totalsent += sent
