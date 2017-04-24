@@ -9,8 +9,8 @@ class SocketObj:
         self.s.connect( (SE_host, SE_port))
         print('connected to server')
     
-    def server_bind(self, port):
-        self.s.bind((socket.gethostname(), port))
+    def server_bind(self, host, port):
+        self.s.bind((host, port))
         print('Binded to port: '+str(port))
 
     def server_listen(self):
