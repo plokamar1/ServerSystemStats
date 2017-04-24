@@ -7,8 +7,8 @@ import os
 import time
 
 class ServerStatusObj:
-    def __init__(self, server_name, diskStatusObj, cpuStatusObj, portsStatus, ramStatus, current_time):
-        self.ServerName = server_name
+    def __init__(self, client_name, diskStatusObj, cpuStatusObj, portsStatus, ramStatus, current_time):
+        self.ClientName = client_name
         self.DiskStatus = diskStatusObj
         self.CpuStatus = cpuStatusObj
         self.PortsStatus = portsStatus
@@ -18,7 +18,6 @@ class ServerStatusObj:
 class DiskObj:
     def __init__(self, partitions_stats):
         self.partitions_stats = partitions_stats
-
 
 class CpuObj:
     def __init__(self, loadAverage, percentPerCpu):
@@ -54,7 +53,6 @@ def get_cpu_stats():
     percentPerCpu = psutil.cpu_percent(interval=1, percpu=True)
     #Construct the cpu object
     coreObj = CpuObj(loadAverage, percentPerCpu)
-    #cpuJSON = json.dumps(vars(coreObj), sort_keys=True, indent=4)
 
     return coreObj
 
@@ -70,8 +68,8 @@ def get_disk_stats():
             diskIO = psutil.disk_io_counters()
             #Creating the dictionary for each partition
             eachPart_stats = {
-                "Name": partition.mountpoint,
-                "Total": diskTotal_gb,
+                "name": partition.mountpoint,
+                "total": diskTotal_gb,
                 "usagePercent": diskUsage.percent,
                 "usageGB": diskUsage_gb,
                 "read_count": diskIO.read_count,
@@ -83,7 +81,6 @@ def get_disk_stats():
             print("No permissions for disk: " + partition.mountpoint + "\n")
 
     partObject = DiskObj(partitions_stats)
-    #diskJSON = json.dumps(vars(partObject), sort_keys=True, indent=4)
 
     return partObject
 
@@ -109,8 +106,7 @@ def get_connections():
                 obj.add_connection()
         
         connList.append(vars(obj))
-    #print(connList)
-    #connsJSON = json.dumps(connObjects, default=get_dict)
+
     return connList
 
 def get_ram_status():
@@ -133,9 +129,9 @@ def get_time_dct():
                 'month': current_time.tm_mon,
                 'day': current_time.tm_mday,
                 'time': str(current_time.tm_hour)+':'+str(current_time.tm_min)+':'+str(current_time.tm_sec) }
-    return(time_dct)
+    return time_dct
 
-def get_system_stats(server_name):
+def get_system_stats(client_name):
     #get all objects
     partObject = get_disk_stats()
     coreObj = get_cpu_stats()
@@ -143,11 +139,12 @@ def get_system_stats(server_name):
     connections = get_connections()
     current_time = get_time_dct()
     #create the object with all the information
-    serverObj = ServerStatusObj( server_name, vars(partObject), vars(coreObj),connections,vars(ramObj), current_time)
+    serverObj = ServerStatusObj( client_name, vars(partObject), vars(coreObj),connections,vars(ramObj), current_time)
+    rtrn_JSON = json.dumps(vars(serverObj), sort_keys=True, indent=4)
     fp = open('test.json','w')
-    fp.write(json.dumps(vars(serverObj), sort_keys=True, indent=4))
-    print(json.dumps(vars(serverObj), sort_keys=True, indent=4))
-    return(json.dumps(vars(serverObj), sort_keys=True, indent=4))
+    fp.write(rtrn_JSON)
+    #print(json.dumps(vars(serverObj), sort_keys=True, indent=4))
+    return rtrn_JSON
 
 
 
@@ -155,4 +152,4 @@ def get_system_stats(server_name):
 #print(get_cpu_stats())
 #call_them_all()
 #get_time_dct()
-get_system_stats("DESKTOP-003")
+print(get_system_stats("DESKTOP-003"))

@@ -18,12 +18,12 @@ def install_and_import(package):
     except ImportError:
         import pip
         pip.main(['install', package])
+        print(package+' was installed!')
     finally:
         globals()[package] = importlib.import_module(package)
 
 
 if __name__ == "__main__":
-
     install_and_import('psutil')
     install_and_import('socket')
     install_and_import('configparser')
@@ -34,17 +34,17 @@ if __name__ == "__main__":
         config.sections()
 
         sleep_time = config.getint('Settings', 'Get_Status_Every')
-        server_name = config.get('Settings','Client_Name')
+        client_name = config.get('Settings','Client_Name')
         server_host = config.get('Server', 'Server_host')
         server_port = config.getint('Server', 'Port')
 
-        if server_name == 'default':
-            server_name = socket.gethostname()
+        if client_name == 'default':
+            client_name = socket.gethostname()
 
         connObj = SocketObj()
         connObj.connect_to_server(server_host, server_port)
         i = 1
         while (i>0):
-            msg = get_system_stats(server_name)
+            msg = get_system_stats(client_name)
             connObj.send_to_server(msg)
             time.sleep(sleep_time*60)
