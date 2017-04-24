@@ -4,13 +4,15 @@ import string
 import time
 import platform
 import os
+import time
 
 class ServerStatusObj:
-    def __init__(self, diskStatusObj, cpuStatusObj, portsStatus, ramStatus):
+    def __init__(self, diskStatusObj, cpuStatusObj, portsStatus, ramStatus, current_time):
         self.DiskStatus = diskStatusObj
         self.CpuStatus = cpuStatusObj
         self.PortsStatus = portsStatus
         self.RamStatus = ramStatus
+        self.time = current_time
 
 class DiskObj:
     def __init__(self, partitions_stats):
@@ -131,14 +133,17 @@ def get_system_stats():
     coreObj = get_cpu_stats()
     ramObj = get_ram_status()
     connections = get_connections()
-    serverObj = ServerStatusObj( vars(partObject), vars(coreObj),connections,vars(ramObj))
+    current_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime())
+    serverObj = ServerStatusObj( vars(partObject), vars(coreObj),connections,vars(ramObj), current_time)
     fp = open('test.json','w')
     fp.write(json.dumps(vars(serverObj), sort_keys=True, indent=4))
+    print(json.dumps(vars(serverObj), sort_keys=True, indent=4))
     return(json.dumps(vars(serverObj), sort_keys=True, indent=4))
 
 
+
 #print( vars(get_disk_stats()))
-# print(get_cpu_stats())
+#print(get_cpu_stats())
 #call_them_all()
 #get_system_stats()
 #get_system_stats()
