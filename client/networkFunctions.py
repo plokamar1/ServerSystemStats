@@ -12,7 +12,7 @@ class SocketObj:
     def send_to_server(self, msg):
         totalsent = 0
         while totalsent < len(msg):
-            sent = self.s.send((msg[totalsent:]))
+            sent = self.s.send((msg[totalsent:].encode(encoding='UTF-8',errors='strict')))
             if sent == 0:
                 raise RuntimeError("Socket disconnected")
             totalsent += sent
