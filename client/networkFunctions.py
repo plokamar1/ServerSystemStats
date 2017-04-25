@@ -6,8 +6,11 @@ class SocketObj:
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def connect_to_server(self, SE_host, SE_port):
-        self.s.connect( (SE_host, SE_port))
-        print('connected to server')
+        try:
+            self.s.connect( (SE_host, SE_port))
+            print('connected to server\n')
+        except ConnectionRefusedError:
+            print('The server refused connection\n')
 
     def send_to_server(self, msg):
         totalsent = 0

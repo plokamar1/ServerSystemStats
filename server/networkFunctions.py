@@ -7,8 +7,11 @@ class SocketObj:
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def connect_to_server(self, SE_host, SE_port):
-        self.s.connect((SE_host, SE_port))
-        print('connected to server')
+        try:
+            self.s.connect( (SE_host, SE_port))
+            print('connected to server\n')
+        except ConnectionRefusedError:
+            print('The server refused connection\n')
 
     def server_bind(self, host, port):
         self.s.bind((host, port))
@@ -25,8 +28,9 @@ class SocketObj:
             data = conn.recv(buffer_size)
             if not data:
                 break
-            print(data.decode())
-        conn.close()
+            
+        return data.decode()
+        #conn.close()
 
     def send_to_server(self, msg):
         totalsent = 0
@@ -36,4 +40,4 @@ class SocketObj:
             if sent == 0:
                 raise RuntimeError("Socket disconnected")
             totalsent += sent
-        print('Message sent')
+        print('Message sent\n')

@@ -83,7 +83,7 @@ def get_disk_stats():
             #Put each dictionary to this list
             partitions_stats.append(eachPart_stats)
         except OSError as e:
-            print("No permissions for disk: " + partition.mountpoint + "\n")
+            print("No permissions for disk: " + partition.mountpoint)
 
     partObject = DiskObj(partitions_stats)
 
