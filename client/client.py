@@ -53,12 +53,14 @@ if __name__ == "__main__":
                 client_name = socket.gethostname()
 
             connObj = SocketObj()
-            connObj.connect_to_server(server_host, server_port)
+            
             i = 1
             while 1:
+                connObj = SocketObj()
+                connObj.connect_to_server(server_host, server_port)
                 msg = get_system_stats(client_name)
                 connObj.send_to_server(msg)
-                time.sleep(sleep_time * 60)
+                time.sleep(sleep_time)
         else:
             print('Config file not found.\n')
             configPath = input('Please paste here the exact directory of config.ini.(C://config.ini)\n')

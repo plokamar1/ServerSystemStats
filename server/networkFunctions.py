@@ -1,5 +1,5 @@
 import socket
-
+import time
 
 class SocketObj:
     def __init__(self, sock=None):
@@ -28,14 +28,14 @@ class SocketObj:
             data = conn.recv(buffer_size)
             if not data:
                 break
-            
-        return data.decode()
-        #conn.close()
+            print('data received at '+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime()))
+            return data.decode(encoding='UTF-8',errors='strict')
+        conn.close()
 
     def send_to_server(self, msg):
         totalsent = 0
         while totalsent < len(msg):
-            sent = self.s.send((msg[totalsent:].decode(
+            sent = self.s.send((msg[totalsent:].encode(
                 encoding='UTF-8', errors='strict')))
             if sent == 0:
                 raise RuntimeError("Socket disconnected")
