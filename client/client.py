@@ -12,6 +12,8 @@ from networkFunctions import *
 #got this code from rominf in stack overflow
 #It checks if a library is installed. If not the function downloads it
 #and imports it
+
+
 def install_and_import(package):
     import importlib
     try:
@@ -23,44 +25,60 @@ def install_and_import(package):
     finally:
         globals()[package] = importlib.import_module(package)
 
+#This function returns a dictionary with the settings the user
+#wrote in config.ini
+
+
+def read_config(configPath):
+    config = SafeConfigParser()
+    config.read(configPath)
+    config.sections()
+    if config.has_section('Settings') and config.has_section('Server'):
+        sleep_time = config.getint('Settings', 'Get_Status_Every')
+        client_name = config.get('Settings', 'Client_Name')
+        server_host = config.get('Server', 'Server_host')
+        server_port = config.getint('Server', 'Port')
+        config_sets = {'sleep_time': sleep_time,
+                    'client_name': client_name,
+                    'server_host': server_host,
+                    'server_port': server_port
+                    }
+        return config_sets
+    else:
+        return False
+
 
 if __name__ == "__main__":
     install_and_import('psutil')
     install_and_import('socket')
     install_and_import('configparser')
 
-    #Checking the OS because the syntax is different
+    #Checking the OS because the syntax of the directories is different
     if platform.system() == 'Windows':
         fl = '\config.ini'
     else:
         fl = '/config.ini'
-    
-    configPath = os.path.dirname(os.path.realpath(__file__)) + fl
 
+    configPath = os.path.dirname(os.path.realpath(__file__)) + fl
     while 1:
         if os.path.isfile(configPath):
-            config = SafeConfigParser()
-            config.read(configPath)
-            print(configPath)
-            config.sections()
+            config_sets = read_config(configPath)
+            if not config_sets:
+                print('[Settings] section or [Server] section missing from config.ini')
+                break
 
-            sleep_time = config.getint('Settings', 'Get_Status_Every')
-            client_name = config.get('Settings', 'Client_Name')
-            server_host = config.get('Server', 'Server_host')
-            server_port = config.getint('Server', 'Port')
-
-            if client_name == 'default':
-                client_name = socket.gethostname()
+            if config_sets['client_name'] == 'default':
+                config_sets['client_name'] = socket.gethostname()
 
             connObj = SocketObj()
-            
-            i = 1
             while 1:
                 connObj = SocketObj()
-                connObj.connect_to_server(server_host, server_port)
-                msg = get_system_stats(client_name)
+                connObj.connect_to_server(
+                    config_sets['server_host'], config_sets['server_port'])
+                msg = get_system_stats(config_sets['client_name'])
                 connObj.send_to_server(msg)
-                time.sleep(sleep_time)
+                time.sleep(config_sets['sleep_time'])
         else:
             print('Config file not found.\n')
-            configPath = input('Please paste here the exact directory of config.ini.(C://config.ini)\n')
+            configPath = input(
+                'Please paste here the exact directory of config.ini.(C://config.ini)\n')
