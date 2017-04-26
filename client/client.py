@@ -1,8 +1,9 @@
 #libraries import
 import time
-import json
 import os
 import platform
+import psutil
+import socket
 from configparser import SafeConfigParser
 
 #scripts import
@@ -24,24 +25,18 @@ def install_and_import(package):
         globals()[package] = importlib.import_module(package)
 
 
-if __name__ == "__main__":
-    install_and_import('psutil')
-    install_and_import('socket')
-    install_and_import('configparser')
-
+def main():
     #Checking the OS because the syntax is different
     if platform.system() == 'Windows':
         fl = '\config.ini'
     else:
         fl = '/config.ini'
-    
     configPath = os.path.dirname(os.path.realpath(__file__)) + fl
 
     while 1:
         if os.path.isfile(configPath):
             config = SafeConfigParser()
             config.read(configPath)
-            print(configPath)
             config.sections()
 
             sleep_time = config.getint('Settings', 'Get_Status_Every')
@@ -54,7 +49,6 @@ if __name__ == "__main__":
 
             connObj = SocketObj()
             
-            i = 1
             while 1:
                 connObj = SocketObj()
                 connObj.connect_to_server(server_host, server_port)
