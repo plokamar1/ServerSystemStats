@@ -2,6 +2,7 @@ import socket
 import os
 import platform
 from configparser import SafeConfigParser
+#importing scripts
 from networkFunctions import *
 from databaseFunctions import *
 
@@ -10,12 +11,17 @@ from databaseFunctions import *
 #and imports it
 def install_and_import(package):
     import importlib
+    #if the package could not be imported the package will be installed
     try:
         importlib.import_module(package)
     except ImportError:
         import pip
-        pip.main(['install', package])
-        print(package + ' was installed!')
+        #If there isn't any version for this package we catch the error
+        try:
+            pip.main(['install', package])
+            print('Package '+package+' imported!')
+        except:
+            print('Couldn\'t import package '+package)
     finally:
         globals()[package] = importlib.import_module(package)
 
@@ -23,7 +29,7 @@ if __name__ == "__main__":
     install_and_import('configparser')
     install_and_import('pymongo')
     install_and_import('json')
-    
+
     config = SafeConfigParser()
 
     if platform.system() == 'Windows':
