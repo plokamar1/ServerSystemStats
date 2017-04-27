@@ -1,166 +1,103 @@
 import psutil
 import json
 import string
-import time
 import platform
 import os
 import time
 
 
 class ServerStatusObj:
-    def __init__(self, client_name, diskStatusObj, cpuStatusObj, portsStatus, ramStatus, current_time):
+    def __init__(self, client_name):
         self.ClientName = client_name
-        self.DiskStatus = diskStatusObj
-        self.CpuStatus = cpuStatusObj
-        self.PortsStatus = portsStatus
-        self.RamStatus = ramStatus
-        self.Time = current_time
+        self.get_cpu_stats()
+        self.get_disk_stats()
+        self.get_ram_stats()
+        self.get_time_dct()
+        self.get_connections()
 
+    def get_cpu_stats(self):
+        #If the OS is not windows get load average
+        if platform.system() != 'Windows':
+            loadAverage = os.getloadavg()
+        else:
+            loadAverage = [None, None, None]
 
-class DiskObj:
-    def __init__(self, partitions_stats):
-        self.partitions_stats = partitions_stats
+        loadAverageLst = {
+            "oneMinute": loadAverage[0],
+            "fiveMinutes": loadAverage[1],
+            "fifteenMinutes": loadAverage[2]
+        }
 
+        percentPerCpu = psutil.cpu_percent(interval=1, percpu=True)
+        self.CpuStatus = {
+            "currentUsagePerCore": percentPerCpu,
+            "loadAverage": loadAverageLst
+        }
 
-class CpuObj:
-    def __init__(self, loadAverage, percentPerCpu):
-        self.loadAverage = {
-            "oneMinute": loadAverage[0], "fiveMinutes": loadAverage[1], "fifteenMinutes": loadAverage[2]}
-        self.currentUsagePerCore = percentPerCpu
+    def get_disk_stats(self):
+        partitions_stats = []
+        partitions = psutil.disk_partitions()
+        for partition in partitions:
+            try:
+                diskUsage = psutil.disk_usage(partition.mountpoint)
+                diskUsage_gb = ('%.2f' % (diskUsage.used / 1073741824)) + " Gb"
+                diskTotal_gb = ('%.2f' %
+                                (diskUsage.total / 1073741824)) + " Gb"
+                diskIO = psutil.disk_io_counters()
+                #Creating the dictionary for each partition
+                eachPart_stats = {
+                    "name": partition.mountpoint,
+                    "total": diskTotal_gb,
+                    "usagePercent": diskUsage.percent,
+                    "usageGB": diskUsage_gb,
+                    "read_count": diskIO.read_count,
+                    "write_count": diskIO.write_count
+                }
+                #Put each dictionary to this list
+                partitions_stats.append(eachPart_stats)
+            except OSError as e:
+                print("No permissions for disk: " + partition.mountpoint)
 
+        self.DiskStatus = {"partition_stats": partitions_stats}
 
-class ConnPorts:
-    def __init__(self, name):
-        self.port_name = name
-        self.connections = 1
+    def get_ram_stats(self):
+        ramStatus = psutil.virtual_memory()
+        ramStatus_percent = ramStatus.percent
+        ramStatus_total = ('%.2f' % (ramStatus.total / 1073741824)) + " Gb"
+        ramStatus_available = (
+            '%.2f' % (ramStatus.available / 1073741824)) + " Gb"
+        ramStatus_used = ('%.2f' % (ramStatus.used / 1073741824)) + " Gb"
+        if platform.system() != 'Windows':
+            ramStatus_cached = ('%.2f' %
+                                (ramStatus.cached / 1073741824)) + " Gb"
+        else:
+            ramStatus_cached = None
 
-    def add_connection(self):
-        self.connections += 1
+        self.RamStatus = {
+            "total": ramStatus_total,
+            "percent": ramStatus_percent,
+            "available": ramStatus_available,
+            "cached": ramStatus_cached,
+            "used": ramStatus_used
+        }
 
+    def get_time_dct(self):
+        current_time = time.localtime()
+        time_dct = {
+            "year": current_time.tm_year,
+            "month": current_time.tm_mon,
+            "day": current_time.tm_mday,
+            "time": str(current_time.tm_hour) + ':' + str(current_time.tm_min) + ':' + str(current_time.tm_sec)
+        }
+        self.Time = time_dct
 
-class RamObj:
-    def __init__(self, ramStatus_percent, ramStatus_total, ramStatus_available, ramStatus_cached, ramStatus_used):
-        self.total = ramStatus_total
-        self.percent = ramStatus_percent
-        self.available = ramStatus_available
-        self.cached = ramStatus_cached
-        self.used = ramStatus_used
-
-
-def get_cpu_stats():
-    #If the OS is not windows get load average
-    if platform.system() != 'Windows':
-        loadAverage = os.getloadavg()
-    else:
-        loadAverage = [None, None, None]
-
-    #Get current cpu usage
-    percentPerCpu = psutil.cpu_percent(interval=1, percpu=True)
-    #Construct the cpu object
-    coreObj = CpuObj(loadAverage, percentPerCpu)
-
-    return coreObj
-
-
-def get_disk_stats():
-    partitions_stats = []
-    partitions = psutil.disk_partitions()
-    for partition in partitions:
-        try:
-            diskUsage = psutil.disk_usage(partition.mountpoint)
-            diskUsage_gb = ('%.2f' % (diskUsage.used / 1073741824)) + " Gb"
-            diskTotal_gb = ('%.2f' % (diskUsage.total / 1073741824)) + " Gb"
-            diskIO = psutil.disk_io_counters()
-            #Creating the dictionary for each partition
-            eachPart_stats = {
-                "name": partition.mountpoint,
-                "total": diskTotal_gb,
-                "usagePercent": diskUsage.percent,
-                "usageGB": diskUsage_gb,
-                "read_count": diskIO.read_count,
-                "write_count": diskIO.write_count
-            }
-            #Put each dictionary to this list
-            partitions_stats.append(eachPart_stats)
-        except OSError as e:
-            print("No permissions for disk: " + partition.mountpoint)
-
-    partObject = DiskObj(partitions_stats)
-
-    return partObject
-
-# def get_dict(connObjects):
-#     return connObjects.__dict__
-
-
-def get_connections():
-    retStr = ""
-    i = 0
-    ports = []
-    connObjects = []
-    connList = []
-    for connection in psutil.net_connections():
-        if connection.status == 'ESTABLISHED':
-            if connection.raddr[1] not in ports:
-                ports.append(connection.raddr[1])
-                connObjects.append(ConnPorts(connection.raddr[1]))
-
-    for obj in connObjects:
-        for connection in psutil.net_connections():
-            if connection.status == 'ESTABLISHED' and connection.raddr[1] == obj.port_name:
-                obj.add_connection()
-
-        connList.append(vars(obj))
-
-    return connList
-
-
-def get_ram_status():
-    ramStatus = psutil.virtual_memory()
-    ramStatus_percent = ramStatus.percent
-    ramStatus_total = ('%.2f' % (ramStatus.total / 1073741824)) + " Gb"
-    ramStatus_available = ('%.2f' % (ramStatus.available / 1073741824)) + " Gb"
-    ramStatus_used = ('%.2f' % (ramStatus.used / 1073741824)) + " Gb"
-    if platform.system() != 'Windows':
-        ramStatus_cached = ('%.2f' % (ramStatus.cached / 1073741824)) + " Gb"
-    else:
-        ramStatus_cached = None
-
-    ramObj = RamObj(ramStatus_percent, ramStatus_total,
-                    ramStatus_available, ramStatus_cached, ramStatus_used)
-
-    return ramObj
-
-
-def get_time_dct():
-    current_time = time.localtime()
-    time_dct = {'year': current_time.tm_year,
-                'month': current_time.tm_mon,
-                'day': current_time.tm_mday,
-                'time': str(current_time.tm_hour) + ':' + str(current_time.tm_min) + ':' + str(current_time.tm_sec)}
-    return time_dct
-
-
-def get_system_stats(client_name):
-    #get all objects
-    partObject = get_disk_stats()
-    coreObj = get_cpu_stats()
-    ramObj = get_ram_status()
-    connections = get_connections()
-    current_time = get_time_dct()
-    #create the object with all the information
-    serverObj = ServerStatusObj(client_name, vars(partObject), vars(
-        coreObj), connections, vars(ramObj), current_time)
-    rtrn_JSON = json.dumps(vars(serverObj), sort_keys=True, indent=4)
-    fp = open('test.json', 'w')
-    fp.write(rtrn_JSON)
-    #print(json.dumps(vars(serverObj), sort_keys=True, indent=4))
-    return rtrn_JSON
-
-
-
-#print( vars(get_disk_stats()))
-#print(get_cpu_stats())
-#call_them_all()
-#get_time_dct()
-#print(get_system_stats("DESKTOP-003"))
+    def get_connections(self):
+        ports = []
+        connList = []
+        ports = list(set(([conn.raddr[1] for conn in psutil.net_connections(
+        ) if conn.status == 'ESTABLISHED'])))
+        for port in ports:
+            prtSm = sum(1 for conn in psutil.net_connections()
+                        if conn.status == 'ESTABLISHED' and conn.raddr[1] == port)
+            connList.append({'port': port, 'connections': prtSm})
+        self.PortsStatus = connList
