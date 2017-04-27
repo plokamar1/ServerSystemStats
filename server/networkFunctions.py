@@ -1,5 +1,6 @@
 import socket
 import time
+import json
 
 class SocketObj:
     def __init__(self, sock=None):
@@ -29,7 +30,7 @@ class SocketObj:
             if not data:
                 break
             print('data received at '+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime()))
-            return data.decode(encoding='UTF-8',errors='strict')
+            return json.loads(data.decode(encoding='UTF-8',errors='strict'))
         conn.close()
 
     def send_to_server(self, msg):
